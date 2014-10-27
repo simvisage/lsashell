@@ -47,7 +47,7 @@ class LC(HasTraits):
     psi_1 = Float(input=True)
     psi_2 = Float(input=True)
 
-    # security factors ULS
+    # safety factors ULS
     #
     gamma_fav = Float(input=True)
     def _gamma_fav_default(self):

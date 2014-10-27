@@ -8,7 +8,7 @@ from traits.api import \
     HasTraits, Directory, List, Int, Float, \
     Array, Str, Property, cached_property, Trait
 
-from enthought.util.home_directory import \
+from util.home_directory import \
     get_home_directory
 
 from traitsui.api import \
@@ -19,7 +19,7 @@ import numpy as np
 
 from limit_state import \
     LimitState
-    
+
 from limit_state_array_adapter import \
     LSArrayAdapter
 
