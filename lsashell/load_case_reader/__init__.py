@@ -1,11 +1,11 @@
 from lsashell.load_case_reader.load_case_reader import \
     LCReader
-    
-from lsashell.load_case_reader.load_case_reader import \
+
+from load_case_reader_rfem import \
     LCReaderRFEM
-    
-from lsashell.load_case_reader.load_case_reader import \
+
+from load_case_reader_infocad import \
     LCReaderInfoCAD
-    
-from lsashell.load_case_reader.load_case_reader_infocad_r_xyz import \
+
+from load_case_reader_infocad_r_xyz import \
     LCReaderInfoCADRxyz

@@ -26,3 +26,4 @@ class LCReader(HasTraits):
         return True
 
     lcc_table = WeakRef
+

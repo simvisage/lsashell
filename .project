@@ -3,6 +3,7 @@
 	<name>lsashell</name>
 	<comment></comment>
 	<projects>
+		<project>matresdev</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

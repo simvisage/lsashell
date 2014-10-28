@@ -32,7 +32,7 @@ class LCReaderInfoCAD(LCReader):
         # element number:
         #
         elem_no = input_arr[:, [elem_no_idx]]
-        
+
         # moments [kNm/m]
         #
         mx = input_arr[:, [mx_idx]]
@@ -69,7 +69,7 @@ class LCReaderInfoCAD(LCReader):
         #-----------
 
         # the path to the 'geo_data' files is specified specifically in the definition of 'read_geo_data'
-        gd = self.read_geo_data( f_name )
+        gd = self.read_geo_data(f_name)
 
         # get mapping from 'geo_data'
         #
@@ -77,25 +77,25 @@ class LCReaderInfoCAD(LCReader):
         q_elem_node_map = gd['q_elem_node_map']
         t_idx = gd['t_idx']
         q_idx = gd['q_idx']
-        
+
         # average element displacements (unordered)
         #
         t_elem_node_U = node_U[ t_elem_node_map ]
         q_elem_node_U = node_U[ q_elem_node_map ]
-        t_elem_U = np.average(t_elem_node_U, axis = 1)
-        q_elem_U = np.average(q_elem_node_U, axis = 1)
-    
+        t_elem_U = np.average(t_elem_node_U, axis=1)
+        q_elem_U = np.average(q_elem_node_U, axis=1)
+
         # average element displacements (ordered in ascending element number)
         #
-        elem_U = np.zeros((len(t_elem_U)+len(q_elem_U), 3), dtype = 'float')
+        elem_U = np.zeros((len(t_elem_U) + len(q_elem_U), 3), dtype='float')
         elem_U[t_idx, :] = t_elem_U
         elem_U[q_idx, :] = q_elem_U
-    
+
         # average element displacements stored in 1d column arrays
         #
-        ux_elem = elem_U[:,0,None]
-        uy_elem = elem_U[:,1,None]
-        uz_elem = elem_U[:,2,None]
+        ux_elem = elem_U[:, 0, None]
+        uy_elem = elem_U[:, 1, None]
+        uz_elem = elem_U[:, 2, None]
 
         return { 'elem_no' : elem_no,
                  'mx' : mx, 'my' : my, 'mxy' : mxy,
@@ -127,7 +127,7 @@ class LCReaderInfoCAD(LCReader):
 
         node_arr = np.loadtxt(node_file)
 
-        elem_line_arr = np.loadtxt(elem_file, usecols = (0, 1,), dtype = str)
+        elem_line_arr = np.loadtxt(elem_file, usecols=(0, 1,), dtype=str)
 
         elem_no_arr, elem_type_arr = elem_line_arr[:, (0, 1)].T
         t_idx = np.argwhere(elem_type_arr == 'SH36')[:, 0]
@@ -144,24 +144,24 @@ class LCReaderInfoCAD(LCReader):
         t_str = StringIO(''.join(t_line_arr))
         q_str = StringIO(''.join(q_line_arr))
 
-        t_elems = np.loadtxt(t_str, usecols = (0, 2, 3, 4, 5), dtype = int)
-        q_elems = np.loadtxt(q_str, usecols = (0, 2, 3, 4, 5, 6), dtype = int)
+        t_elems = np.loadtxt(t_str, usecols=(0, 2, 3, 4, 5), dtype=int)
+        q_elems = np.loadtxt(q_str, usecols=(0, 2, 3, 4, 5, 6), dtype=int)
 
         t_elem_node_map = t_elems[:, 1:-1] - 1
         q_elem_node_map = q_elems[:, 1:-1] - 1
         t_thickness_idx = t_elems[:, -1] - 1
         q_thickness_idx = q_elems[:, -1] - 1
 
-        node_idx = np.array(node_arr[:, 0] - 1, dtype = 'int')
+        node_idx = np.array(node_arr[:, 0] - 1, dtype='int')
         node_X = node_arr[:, 1:][node_idx]
 
         t_elem_node_X = node_X[ t_elem_node_map ]
         q_elem_node_X = node_X[ q_elem_node_map ]
 
-        t_elem_X = np.average(t_elem_node_X, axis = 1)
-        q_elem_X = np.average(q_elem_node_X, axis = 1)
+        t_elem_X = np.average(t_elem_node_X, axis=1)
+        q_elem_X = np.average(q_elem_node_X, axis=1)
 
-        n_X = np.zeros((len(line_arr), 3), dtype = 'float')
+        n_X = np.zeros((len(line_arr), 3), dtype='float')
 
         n_X[t_idx, :] = t_elem_X
         n_X[q_idx, :] = q_elem_X
@@ -183,25 +183,25 @@ class LCReaderInfoCAD(LCReader):
             idx_list.append(idx)
             d_list.append(d)
 
-        d_arr = np.array(d_list, dtype = 'f')
-        d_arr = d_arr[np.array(idx_list, dtype = 'int_') - 1]
+        d_arr = np.array(d_list, dtype='f')
+        d_arr = d_arr[np.array(idx_list, dtype='int_') - 1]
 
-        thickness_arr = np.zeros((elem_line_arr.shape[0],), dtype = 'f')
+        thickness_arr = np.zeros((elem_line_arr.shape[0],), dtype='f')
         thickness_arr[t_idx] = d_arr[ t_thickness_idx ]
         thickness_arr[q_idx] = d_arr[ q_thickness_idx ]
 
         # convert strings entries to floats
         #
-        elem_no_arr = np.array( elem_no_arr, dtype = float )
+        elem_no_arr = np.array(elem_no_arr, dtype=float)
 
         # convert 1d-arrays to 2d-column arrays
         #
-        elem_no_arr = elem_no_arr[:,np.newaxis]
+        elem_no_arr = elem_no_arr[:, np.newaxis]
 
-        X = X[:,np.newaxis]
-        Y = Y[:,np.newaxis]
-        Z = Z[:,np.newaxis]
-        thickness_arr = thickness_arr[:,np.newaxis]
+        X = X[:, np.newaxis]
+        Y = Y[:, np.newaxis]
+        Z = Z[:, np.newaxis]
+        thickness_arr = thickness_arr[:, np.newaxis]
 
         return  {'elem_no':elem_no_arr,
                  'X':X, 'Y':Y, 'Z':Z,
@@ -215,40 +215,42 @@ class LCReaderInfoCAD(LCReader):
 
     def plot_mesh(self, mlab, geo):
 
-        points = geo['node_X'] 
+        points = geo['node_X']
         triangles = geo['t_elem_node_map']
         quads = geo['q_elem_node_map']
-        #scalars = random.random(points.shape)
+        # scalars = random.random(points.shape)
 
         # The TVTK dataset.
-        qmesh = tvtk.PolyData(points = points, polys = quads)
-        mlab.pipeline.surface(qmesh, representation = 'wireframe')
+        qmesh = tvtk.PolyData(points=points, polys=quads)
+        mlab.pipeline.surface(qmesh, representation='wireframe')
 
         # The TVTK dataset.
-        tmesh = tvtk.PolyData(points = points, polys = triangles)
-        mlab.pipeline.surface(tmesh, representation = 'wireframe')
+        tmesh = tvtk.PolyData(points=points, polys=triangles)
+        mlab.pipeline.surface(tmesh, representation='wireframe')
 
-    def plot_deformed_mesh(self, mlab, geo_data, state_data = {'node_U' : np.array([0., 0., 0.])}, warp_factor = 1.0):
+    def plot_deformed_mesh(self, mlab, geo_data, state_data={'node_U' : np.array([0., 0., 0.])}, warp_factor=1.0):
         '''plot the deformed mesh based on the nodal displacement defined in 'state_data'
         '''
-        points = geo_data['node_X'] 
+        points = geo_data['node_X']
         node_U = state_data['node_U']
 
-        node_U_warped = node_U * warp_factor 
+        node_U_warped = node_U * warp_factor
         points += node_U_warped
 
         triangles = geo_data['t_elem_node_map']
         quads = geo_data['q_elem_node_map']
 
         # The TVTK dataset.
-        qmesh = tvtk.PolyData(points = points, polys = quads)
-        mlab.pipeline.surface(qmesh, representation = 'wireframe')
+        qmesh = tvtk.PolyData(points=points, polys=quads)
+        mlab.pipeline.surface(qmesh, representation='wireframe')
 
         # The TVTK dataset.
-        tmesh = tvtk.PolyData(points = points, polys = triangles)
-        mlab.pipeline.surface(tmesh, representation = 'wireframe')
+        tmesh = tvtk.PolyData(points=points, polys=triangles)
+        mlab.pipeline.surface(tmesh, representation='wireframe')
 
-    def plot_sd(self, mlab, geo_data, sd_key, state_data = {'node_U' : array([0., 0., 0.])}, warp_factor = 1.0):
+    def plot_sd(self, mlab, geo_data, sd_key,
+                state_data={'node_U' : np.array([0., 0., 0.])},
+                warp_factor=1.0):
         '''plot the chosen state data defined by 'sd_key' at the center of gravity of the elements
         together with the element mesh; 'warp_factor' can be used to warp the deformation state in the plot.
         '''
@@ -257,7 +259,7 @@ class LCReaderInfoCAD(LCReader):
 
         # plot the deformed geometry (as mesh)
         #
-        self.plot_deformed_mesh(mlab, gd, state_data = sd, warp_factor = warp_factor)
+        self.plot_deformed_mesh(mlab, gd, state_data=sd, warp_factor=warp_factor)
 
         # get mapping from 'geo_data'
         #
@@ -265,8 +267,8 @@ class LCReaderInfoCAD(LCReader):
         q_elem_node_map = gd['q_elem_node_map']
         t_idx = gd['t_idx']
         q_idx = gd['q_idx']
-        
-        # nodal displacement 
+
+        # nodal displacement
         #
         node_U = sd['node_U']
 
@@ -274,45 +276,45 @@ class LCReaderInfoCAD(LCReader):
         #
         t_elem_node_U = node_U[ t_elem_node_map ]
         q_elem_node_U = node_U[ q_elem_node_map ]
-        t_elem_U = np.average(t_elem_node_U, axis = 1)
-        q_elem_U = np.average(q_elem_node_U, axis = 1)
-    
+        t_elem_U = np.average(t_elem_node_U, axis=1)
+        q_elem_U = np.average(q_elem_node_U, axis=1)
+
         # element displacement (ordered in ascending element number)
         #
-        elem_U = np.zeros((len(t_elem_U)+len(q_elem_U), 3), dtype = 'float')
+        elem_U = np.zeros((len(t_elem_U) + len(q_elem_U), 3), dtype='float')
         elem_U[t_idx, :] = t_elem_U
         elem_U[q_idx, :] = q_elem_U
-    
-        # element coordinates of the undeformed shape 
+
+        # element coordinates of the undeformed shape
         # (2d column arrays)
         #
         X = gd['X']
         Y = gd['Y']
         Z = gd['Z']
-    
-        # average element deformations 
+
+        # average element deformations
         #
-        ux_elem = elem_U[:,0,None]
-        uy_elem = elem_U[:,1,None]
-        uz_elem = elem_U[:,2,None]
-    
-        # element coordinates of the deformed state 
-        # considering the specified warp factor 
+        ux_elem = elem_U[:, 0, None]
+        uy_elem = elem_U[:, 1, None]
+        uz_elem = elem_U[:, 2, None]
+
+        # element coordinates of the deformed state
+        # considering the specified warp factor
         #
         X_def = X + ux_elem * warp_factor
         Y_def = Y + uy_elem * warp_factor
         Z_def = Z + uz_elem * warp_factor
-        
-        # plot state data in the deformed geometry  
+
+        # plot state data in the deformed geometry
         #
         mlab.points3d(X_def, Y_def, Z_def, sd[sd_key],
-                      mode = "cube")
+                      mode="cube")
 
-    def plot_col(self, mlab, plot_col, geo_data,  
-                 state_data = {'ux_elem' : np.array([[0.], [0.], [0.]]),
-                               'uy_elem' : np.array([[0.], [0.], [0.]]), 
-                               'uz_elem' : np.array([[0.], [0.], [0.]])}, 
-                 warp_factor = 1.0):
+    def plot_col(self, mlab, plot_col, geo_data,
+                 state_data={'ux_elem' : np.array([[0.], [0.], [0.]]),
+                               'uy_elem' : np.array([[0.], [0.], [0.]]),
+                               'uz_elem' : np.array([[0.], [0.], [0.]])},
+                 warp_factor=1.0):
         '''
         plot the chosen plot_col array at the center of gravity of the elements;
         method is used by 'ls_table' to plot the selected plot variable
@@ -321,42 +323,42 @@ class LCReaderInfoCAD(LCReader):
         gd = geo_data
         sd = state_data
 
-        # element coordinates of the undeformed shape 
+        # element coordinates of the undeformed shape
         # (2d column arrays)
         #
         X = gd['X']
         Y = gd['Y']
         Z = gd['Z']
-    
-        # average element deformations 
+
+        # average element deformations
         #
         ux_elem = sd['ux_elem']
         uy_elem = sd['uy_elem']
         uz_elem = sd['uz_elem']
-    
-        # element coordinates of the deformed state 
-        # considering the specified warp factor 
+
+        # element coordinates of the deformed state
+        # considering the specified warp factor
         #
         X_def = X + ux_elem * warp_factor
         Y_def = Y + uy_elem * warp_factor
         Z_def = Z + uz_elem * warp_factor
-        
+
         X_def = X_def.flatten()
         Y_def = Y_def.flatten()
         Z_def = Z_def.flatten()
 
-        # plot state data in the deformed geometry  
+        # plot state data in the deformed geometry
         #
         mlab.points3d(X_def, Y_def, Z_def, plot_col,
-                      mode = "cube",
-                      scale_mode = 'none',
-                      scale_factor = 0.05)
-    
+                      mode="cube",
+                      scale_mode='none',
+                      scale_factor=0.05)
+
     def check_for_consistency(self, lc_list, geo_data_dict):
         print '*** check for consistency ***'
 
         for lc in lc_list:
-            # check internal LC-consitency: 
+            # check internal LC-consitency:
             # (compare elem_no of first LC with all other LC's in 'lc_list')
             #
             if not all(lc_list[0].state_data_dict['elem_no'] == lc.state_data_dict['elem_no']):
@@ -365,7 +367,7 @@ class LCReaderInfoCAD(LCReader):
                 return False
 
             # check external consistency:
-            # (compare 'elem_no' in 'geo_data' and 'elem_no' in state data of all loading-cases 
+            # (compare 'elem_no' in 'geo_data' and 'elem_no' in state data of all loading-cases
             # input files (e.g. 'LC1.txt') defined in 'lc_list')
             #
             if not all(geo_data_dict['elem_no'] == lc.state_data_dict['elem_no']):
