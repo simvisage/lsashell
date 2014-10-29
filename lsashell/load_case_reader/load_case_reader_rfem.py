@@ -11,6 +11,7 @@ import numpy as np
 from lsashell.load_case_reader.load_case_reader import \
     LCReader
 
+
 class LCReaderRFEM(LCReader):
 
     def read_state_data(self, f_name):
@@ -24,9 +25,10 @@ class LCReaderRFEM(LCReader):
 
         print '*** read state data from file: %s ***' % (file_name)
 
-        # get the column headings defined in the second row 
+        # get the column headings defined in the second row
         # of the csv soliciotations input file
-        # column_headings = np.array(["Nr.","Punkt","X","Y","Z","mx","my","mxy","vx","vy","nx","ny","nxy"])
+        # column_headings = np.array(["Nr.","Punkt","X","Y","Z","mx","my",
+        # "mxy","vx","vy","nx","ny","nxy"])
         #
         file_ = open(file_name, 'r')
         lines = file_.readlines()
@@ -51,7 +53,7 @@ class LCReaderRFEM(LCReader):
 
         # define np.arrays containing the information from the raw input file
         #
-        input_arr = np.loadtxt(file_name , delimiter = ';', skiprows = 2)
+        input_arr = np.loadtxt(file_name, delimiter=';', skiprows=2)
 
         # element number:
         #
@@ -75,10 +77,10 @@ class LCReaderRFEM(LCReader):
         ny = input_arr[:, ny_idx]
         nxy = input_arr[:, nxy_idx]
 
-        return { 'elem_no' : elem_no, 'X' : X, 'Y' : Y, 'Z' : Z,
-                 'mx' : mx, 'my' : my, 'mxy' : mxy,
-                 'nx' : nx, 'ny' : ny, 'nxy' : nxy,
-               }
+        return {'elem_no': elem_no, 'X': X, 'Y': Y, 'Z': Z,
+                'mx': mx, 'my': my, 'mxy': mxy,
+                'nx': nx, 'ny': ny, 'nxy': nxy,
+                }
 
     # stress resultants to be multiplied within the LCC combinations
     #
@@ -93,9 +95,9 @@ class LCReaderRFEM(LCReader):
 
 
         # coordinates [m]:
-        # (NOTE: corrds are taken from the state data file of the first loading case) 
+        # (NOTE: corrds are taken from the state data file of the first loading case)
 
-        # the column headings are defined in the first/second row 
+        # the column headings are defined in the first/second row
         # of the csv thickness input file
         # Flaeche;;;Material;Dicke;;Exzentrizitaet;Integrierte Objekte;;;
 
@@ -104,7 +106,7 @@ class LCReaderRFEM(LCReader):
 
         # read the float data:
         #
-        input_arr = np.loadtxt(file_name, usecols = (0, 5), delimiter = ';', skiprows = 2)
+        input_arr = np.loadtxt(file_name, usecols=(0, 5), delimiter=';', skiprows=2)
         elem_no_idx = 0
         thickness_idx = 1
 
@@ -117,12 +119,12 @@ class LCReaderRFEM(LCReader):
         # (NOTE: column np.array must be of shape (n_elems, 1)
         #
         thickness = input_arr[:, thickness_idx][:, None]
-        
+
         # convert thickness to [m]
         thickness = thickness / 1000.
 
         # coordinates [m]:
-        # (NOTE: corrds are taken from the state data file of the first loading case) 
+        # (NOTE: corrds are taken from the state data file of the first loading case)
         #
         X = self.lcc_table.lc_list[0].state_data_orig['X']
         Y = self.lcc_table.lc_list[0].state_data_orig['Y']
@@ -132,7 +134,7 @@ class LCReaderRFEM(LCReader):
                  'X':X, 'Y':Y, 'Z':Z,
                  'thickness':thickness }
 
-    def plot_col(self, mlab, plot_col, geo_data, state_data, warp_factor = 1.):
+    def plot_col(self, mlab, plot_col, geo_data, state_data, warp_factor=1.):
         '''
         plot the chosen plot_col array at the center of gravity of the elements;
         method is used by 'ls_table' to plot the selected plot variable
@@ -140,7 +142,7 @@ class LCReaderRFEM(LCReader):
         '''
         gd = geo_data
 
-        # element coordinates of the undeformed shape 
+        # element coordinates of the undeformed shape
         # (2d column arrays)
         #
         X = gd['X'].flatten()
@@ -148,19 +150,19 @@ class LCReaderRFEM(LCReader):
         # switch orientation of the z-axis
         Z = (-1.0) * gd['Z'].flatten()
 
-        # plot state data in the deformed geometry  
+        # plot state data in the deformed geometry
         #
         mlab.points3d(X, Y, Z, plot_col,
-                           colormap = "YlOrBr",
-                           mode = "cube",
-                           scale_mode = 'none',
-                           scale_factor = 0.15)
+                           colormap="YlOrBr",
+                           mode="cube",
+                           scale_mode='none',
+                           scale_factor=0.15)
 
 
     def check_for_consistency(self, lc_list, geo_data_dict):
 
         for lc in lc_list:
-            # check internal LC-consitency: 
+            # check internal LC-consitency:
             # (compare coords-values of first LC with all other LC's in 'lc_list')
             #
             if not all(lc_list[0].state_data_dict['X'] == lc.state_data_dict['X']) and \
@@ -171,7 +173,7 @@ class LCReaderRFEM(LCReader):
                 return False
 
             # check external consistency:
-            # (compare 'elem_no' in 'thickness.csv' and in all loading-cases 
+            # (compare 'elem_no' in 'thickness.csv' and in all loading-cases
             # input files (e.g. 'LC1.csv') defined in 'lc_list')
             #
             if not all(geo_data_dict['elem_no'] == lc.state_data_dict['elem_no']):

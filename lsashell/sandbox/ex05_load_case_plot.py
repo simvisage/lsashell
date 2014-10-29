@@ -7,6 +7,9 @@ Created on Oct 28, 2014
 from load_case_reader import \
     LCReaderInfoCAD
 
+from load_case import \
+    LC
+
 import os
 
 if __name__ == '__main__':
@@ -23,11 +26,6 @@ if __name__ == '__main__':
                       )
     lc_reader = LCReaderInfoCAD(data_dir=dd)
 
-    state_data = lc_reader.read_state_data('LC6.txt')
-    geo_data = lc_reader.read_geo_data('LC6.txt')
+    lc = LC(reader=lc_reader, file_name='LC6.txt')
 
-    import mayavi.mlab as mlab
-
-    lc_reader.plot_sd(mlab, geo_data, 'mx', state_data, 10.0)
-
-    mlab.show()
+    lc.configure_traits()

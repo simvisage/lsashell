@@ -67,7 +67,7 @@ class LoadCase(HasTraits):
 
 if __name__ == '__main__':
     ls = LoadCase()
-    print 'category:', ls.category
+    print'category:', ls.category
     print 'initial', ls.gamma_fav
     ls.category = 'imposed-load'
     print 'category:', ls.category
