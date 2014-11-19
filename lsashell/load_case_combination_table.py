@@ -49,9 +49,11 @@ lcc_list_editor = TableEditor(
     reorderable=False,
     sort_model=False,
     auto_size=False,
-    )
+)
+
 
 class LCCTable(HasTraits):
+
     '''Loading Case Manager.
     Generates and sorts the loading case combinations
     of all specified loading cases.
@@ -60,8 +62,8 @@ class LCCTable(HasTraits):
     # define ls
     #
     ls = Trait('ULS',
-                {'ULS' : ULS,
-                 'SLS' : SLS })
+               {'ULS': ULS,
+                'SLS': SLS})
 
     # manager of input files with state and geometry data
     #
@@ -69,6 +71,7 @@ class LCCTable(HasTraits):
                                      InfoCAD=LCReaderInfoCAD))
 
     reader = Property(Instance(LCReader), depends_on='reader_type')
+
     @cached_property
     def _get_reader(self):
         return self.reader_type_(lcc_table=self)
@@ -93,8 +96,10 @@ class LCCTable(HasTraits):
     #
     lc_list_ = List(Instance(LC))
     lc_list = Property(List, depends_on='+filter')
+
     def _set_lc_list(self, value):
         self.lc_list_ = value
+
     def _get_lc_list(self):
         for lc in self.lc_list_:
             lc.reader = self.reader
@@ -104,14 +109,16 @@ class LCCTable(HasTraits):
         return self.lc_list_
 
     lcc_table_columns = Property(depends_on='lc_list_, +filter')
+
     @cached_property
     def _get_lcc_table_columns(self):
-        return [ ObjectColumn(label='Id', name='lcc_id') ] + \
-               [ ObjectColumn(label=lc.name, name=lc.name)
+        return [ObjectColumn(label='Id', name='lcc_id') ] + \
+               [ObjectColumn(label=lc.name, name=lc.name)
                 for idx, lc in enumerate(self.lc_list) ] + \
-                [ ObjectColumn(label='assess_value', name='assess_value') ]
+            [ObjectColumn(label='assess_value', name='assess_value')]
 
     sr_columns = Property(List(Str), depends_on='lc_list_, +filter')
+
     @cached_property
     def _get_sr_columns(self):
         '''derive the order of the stress resultants
@@ -136,12 +143,13 @@ class LCCTable(HasTraits):
     #-------------------------------
 
     lc_arr = Property(Array)
+
     @cached_property
     def _get_lc_arr(self):
         '''stack stress resultants arrays of all loading cases together.
         This yields an array of shape ( n_lc, n_elems, n_sr )
         '''
-        sr_arr_list = [ lc.sr_arr for lc in self.lc_list ]
+        sr_arr_list = [lc.sr_arr for lc in self.lc_list]
         return np.array(sr_arr_list)
 
     #-------------------------------
@@ -149,18 +157,22 @@ class LCCTable(HasTraits):
     #-------------------------------
 
     n_sr = Property(Int)
+
     def _get_n_sr(self):
         return len(self.sr_columns)
 
     n_lc = Property(Int)
+
     def _get_n_lc(self):
         return len(self.lc_list)
 
     n_lcc = Property(Int)
+
     def _get_n_lcc(self):
         return self.combi_arr.shape[0]
 
     n_elems = Property(Int)
+
     def _get_n_elems(self):
         return self.lc_list[0].sr_arr.shape[0]
 
@@ -178,7 +190,8 @@ class LCCTable(HasTraits):
         needs to be defined. In the original version of 'itertools.product'
         the function takes a tuple as argument ("*args").
         """
-        pools = map(tuple, args)  # within original version args defined as *args
+        pools = map(
+            tuple, args)  # within original version args defined as *args
         result = [[]]
         for pool in pools:
             result = [x + [y] for x in result for y in pool]
@@ -192,6 +205,7 @@ class LCCTable(HasTraits):
     #
 #    imposed_idx_list = Property( List, depends_on = 'lc_list_, lc_list_.+input' )
     imposed_idx_list = Property(List, depends_on='lc_list_')
+
     @cached_property
     def _get_imposed_idx_list(self):
         '''list of indices for the imposed loads
@@ -220,25 +234,27 @@ class LCCTable(HasTraits):
         # overwrite ones with psi-values in case of imposed-loads:
         #
         for imposed_idx in self.imposed_idx_list:
-            psi_value = getattr(self.lc_list[ imposed_idx ], psi_key)
-            psi_list[ imposed_idx ] = psi_value
+            psi_value = getattr(self.lc_list[imposed_idx], psi_key)
+            psi_list[imposed_idx] = psi_value
 
         return np.array(psi_list, dtype='float_')
 
     # list containing names of the loading cases
     #
     lc_name_list = Property(List, depends_on='lc_list_')
+
     @cached_property
     def _get_lc_name_list(self):
         '''list of names of all loading cases
         '''
-        return [ lc.name for lc in self.lc_list ]
+        return [lc.name for lc in self.lc_list]
 
     show_lc_characteristic = Bool(True)
 
     # combination array:
     #
     combi_arr = Property(Array, depends_on='lc_list_, combination_SLS')
+
     @cached_property
     def _get_combi_arr(self):
         '''array containing the security and combination factors
@@ -276,7 +292,7 @@ class LCCTable(HasTraits):
             # characteristic values of each loading case.
             #
             if self.show_lc_characteristic:
-                combi_arr = np.vstack([ np.identity(self.n_lc), combi_arr ])
+                combi_arr = np.vstack([np.identity(self.n_lc), combi_arr])
 
             return combi_arr
 
@@ -311,7 +327,8 @@ class LCCTable(HasTraits):
                 # and avoid in place modification
                 psi_arr = np.copy(psi_non_lead_arr)
                 psi_arr[imposed_idx] = psi_lead_arr[imposed_idx]
-                combi_arr_lead_i = combi_arr[np.where(combi_arr[:, imposed_idx] != 0)] * psi_arr
+                combi_arr_lead_i = combi_arr[
+                    np.where(combi_arr[:, imposed_idx] != 0)] * psi_arr
                 combi_arr_psi_list.append(combi_arr_lead_i)
 
             combi_arr_psi_no_0 = np.vstack(combi_arr_psi_list)
@@ -320,11 +337,12 @@ class LCCTable(HasTraits):
             # get combinations with all!! imposed = 0
             #
             lcc_all_imposed_zero = np.where((combi_arr[:, self.imposed_idx_list] == 0)
-                                          .all(axis=1))
+                                            .all(axis=1))
 
             # add to combinations
             #
-            combi_arr_psi = np.vstack((combi_arr[lcc_all_imposed_zero], combi_arr_psi_no_0))
+            combi_arr_psi = np.vstack(
+                (combi_arr[lcc_all_imposed_zero], combi_arr_psi_no_0))
 
         #---------------------------------------------------------------
         # get exclusive loading cases ('exclusive_to')
@@ -342,7 +360,7 @@ class LCCTable(HasTraits):
             for exclusive_name in lc.exclusive_to:
                 if exclusive_name in self.lc_name_list:
                     exclusive_idx = self.lc_name_list.index(exclusive_name)
-                    exclusive_list.append([ i_lc, exclusive_idx ])
+                    exclusive_list.append([i_lc, exclusive_idx])
 
         # eliminate the duplicates in 'exclusive_list'
         #
@@ -371,9 +389,10 @@ class LCCTable(HasTraits):
             # e.g.         0.0  0.0  0.0  --> sum = 0 --> true combi --> accepted combination (only body-loads)
             #              ...  ...  ...
             #
-            mask_arr = np.where(combi_arr_psi_exclusive[ :, exclusive_list_entry ] != 0, 1.0, 0.0)
+            mask_arr = np.where(
+                combi_arr_psi_exclusive[:, exclusive_list_entry] != 0, 1.0, 0.0)
             true_combi = np.where(np.sum(mask_arr, axis=1) <= 1.0)
-            combi_arr_psi_exclusive = combi_arr_psi_exclusive[ true_combi ]
+            combi_arr_psi_exclusive = combi_arr_psi_exclusive[true_combi]
 
         #---------------------------------------------------------------
         # create array with only unique load case combinations
@@ -393,14 +412,16 @@ class LCCTable(HasTraits):
             # Broadcasting is used for the bool evaluation:
             #
             if (row == combi_arr_psi_exclusive_unique).all(axis=1.0).any() == False:
-                combi_arr_psi_exclusive_unique = np.vstack((combi_arr_psi_exclusive_unique, row))
+                combi_arr_psi_exclusive_unique = np.vstack(
+                    (combi_arr_psi_exclusive_unique, row))
 
         # if option is set to 'True' the loading case combination table
         # is enlarged with an identity matrix in order to see the
         # characteristic values of each loading case.
         #
         if self.show_lc_characteristic:
-            combi_arr_psi_exclusive_unique = np.vstack([ np.identity(self.n_lc), combi_arr_psi_exclusive_unique ])
+            combi_arr_psi_exclusive_unique = np.vstack(
+                [np.identity(self.n_lc), combi_arr_psi_exclusive_unique])
 
         return combi_arr_psi_exclusive_unique
 
@@ -409,6 +430,7 @@ class LCCTable(HasTraits):
     #-------------------------------
 
     lcc_arr = Property(Array, depends_on='lc_list_')
+
     @cached_property
     def _get_lcc_arr(self):
         '''Array of all loading case combinations following the
@@ -428,7 +450,7 @@ class LCCTable(HasTraits):
         # Broadcasting is used to generate array containing the multiplied lc's
         # yielding an array of shape ( n_lcc, n_lc, n_elems, n_sr )
         #
-        lc_combi_arr = lc_arr[ None, :, :, :] * combi_arr[:, :, None, None ]
+        lc_combi_arr = lc_arr[None, :, :, :] * combi_arr[:, :, None, None]
 
         # Then the sum over index 'n_lc' is evaluated yielding
         # an array of all loading case combinations.
@@ -460,6 +482,7 @@ class LCCTable(HasTraits):
     # thickness_data input file:
     #
     geo_data_file = Property
+
     def _get_geo_data_file(self):
         return os.path.join(self.data_dir, 'thickness.csv')
 
@@ -470,6 +493,7 @@ class LCCTable(HasTraits):
     # coordinates and element thickness read from file:
     #
     geo_data_orig = Property(Dict, depends_on='geo_data_file')
+
     @cached_property
     def _get_geo_data_orig(self):
         return self.reader.read_geo_data(self.geo_data_file)
@@ -482,15 +506,17 @@ class LCCTable(HasTraits):
     # construct a filter
     #
     data_filter = Callable(filter=True)
+
     def _data_filter_default(self):
-        return lambda lcc_table, x: x  #  - do nothing by default
+        return lambda lcc_table, x: x  # - do nothing by default
 
     geo_data_dict = Property(Dict, depends_on='geo_data_file, +filter')
+
     @cached_property
     def _get_geo_data_dict(self):
         d = {}
         for k, arr in self.geo_data_orig.items():
-            d[ k ] = self.data_filter(self, arr)
+            d[k] = self.data_filter(self, arr)
         return d
 
     #-------------------------------
@@ -498,6 +524,7 @@ class LCCTable(HasTraits):
     #-------------------------------
 
     lcc_list = Property(List, depends_on='lc_list_')
+
     @cached_property
     def _get_lcc_list(self):
         '''list of loading case combinations (instances of LCC)
@@ -520,25 +547,25 @@ class LCCTable(HasTraits):
 
             state_data_dict = {}
             for i_sr, name in enumerate(sr_columns):
-                state_data_dict[ name ] = lcc_arr[ i_lcc, :, i_sr ][:, None]
+                state_data_dict[name] = lcc_arr[i_lcc, :, i_sr][:, None]
 
             print '################### lcc %s ##################' % str(i_lcc)
 
-            lcc = LCC(# lcc_table = self,
-                       factors=combi_arr[ i_lcc, : ],
-                       lcc_id=i_lcc,
-                       # changes necessary to distinguish plotting functionality defined in 'ls_table'
-                       # e.i. plot deformation when 'LCCReaderInfoCAD' is used
-                       ls_table=LSTable(reader=self.reader,
-                                           geo_data=self.geo_data_dict,
-                                           state_data=state_data_dict,
-                                           k_alpha_min=self.k_alpha_min,
-                                           ls=self.ls)
-                       )
+            lcc = LCC(  # lcc_table = self,
+                factors=combi_arr[i_lcc, :],
+                lcc_id=i_lcc,
+                # changes necessary to distinguish plotting functionality defined in 'ls_table'
+                # e.i. plot deformation when 'LCCReaderInfoCAD' is used
+                ls_table=LSTable(reader=self.reader,
+                                 geo_data=self.geo_data_dict,
+                                 state_data=state_data_dict,
+                                 k_alpha_min=self.k_alpha_min,
+                                 ls=self.ls)
+            )
 
             for idx, lc in enumerate(self.lc_list):
-            # @todo: use 'Float' instead of 'Int'
-                lcc.add_trait(lc.name, Int(combi_arr[ i_lcc, idx ]))
+                # @todo: use 'Float' instead of 'Int'
+                lcc.add_trait(lc.name, Int(combi_arr[i_lcc, idx]))
 
             lcc_list.append(lcc)
 
@@ -553,9 +580,9 @@ class LCCTable(HasTraits):
         lc = self.lc_arr[lc]
         gd = self.geo_data_dict
         mlab.points3d(gd['X'], gd['Y'], gd['Z'], lc[:, sr],
-                       # colormap = "YlOrBr",
-                       mode="cube",
-                       scale_factor=0.1)
+                      # colormap = "YlOrBr",
+                      mode="cube",
+                      scale_factor=0.1)
 
     def plot_n_tex(self, title=None):
         '''plot number of textile reinforcement 'n_tex' for all loading case combinations
@@ -616,21 +643,21 @@ class LCCTable(HasTraits):
         plot_col = np.where(plot_col < 0, 0, plot_col)
 
         mlab.figure(figure=title,
-                     bgcolor=(1.0, 1.0, 1.0),
-                     fgcolor=(0.0, 0.0, 0.0))
+                    bgcolor=(1.0, 1.0, 1.0),
+                    fgcolor=(0.0, 0.0, 0.0))
 
         mlab.points3d(X, Y, (-1.0) * Z, plot_col,
-                       colormap="YlOrBr",
-                       mode="cube",
-                       scale_mode='none',
-                       scale_factor=0.10)
+                      colormap="YlOrBr",
+                      mode="cube",
+                      scale_mode='none',
+                      scale_factor=0.10)
 
         mlab.scalarbar(title='n_tex (all LCs)', orientation='vertical')
 
         mlab.show()
 
-
-    def plot_assess_value(self, title=None, add_assess_values_from_file=None, save_assess_values_to_file=None):
+    def plot_assess_value(self, title=None, add_assess_values_from_file=None,
+                          save_assess_values_to_file=None):
         '''plot-3d the assess value for all loading case combinations as structure plot with color legend
         '''
         print '################### plotting assess_value ##################'
@@ -715,26 +742,29 @@ class LCCTable(HasTraits):
             assess_value_arr = np.loadtxt(add_assess_values_from_file)
             plot_col += assess_value_arr
 
-#        # if n_tex is negative plot 0 instead:
+# if n_tex is negative plot 0 instead:
 #        #
 #        plot_col = np.where(plot_col < 0, 0, plot_col)
 
         mlab.figure(figure=title,
-                     bgcolor=(1.0, 1.0, 1.0),
-                     fgcolor=(0.0, 0.0, 0.0))
+                    bgcolor=(1.0, 1.0, 1.0),
+                    fgcolor=(0.0, 0.0, 0.0))
 
         mlab.points3d(X, Y, Z, plot_col,
-                       colormap="YlOrBr",
-                       mode="cube",
-                       scale_mode='none',
-                       scale_factor=0.10)
+                      colormap="YlOrBr",
+                      mode="cube",
+                      scale_mode='none',
+                      scale_factor=0.10)
 
-        mlab.scalarbar(title=assess_name + ' (all LCs)', orientation='vertical')
+        mlab.scalarbar(
+            title=assess_name + ' (all LCs)', orientation='vertical')
 
         mlab.show()
 
-
-    def plot_nm_interaction(self, save_fig_to_file=None, show_tension_only=False, add_max_min_nm_from_file=None, save_max_min_nm_to_file=None):
+    def plot_nm_interaction(self, save_fig_to_file=None,
+                            show_tension_only=False,
+                            add_max_min_nm_from_file=None,
+                            save_max_min_nm_to_file=None):
         '''plot the nm-interaction for all loading case combinations
         '''
 
@@ -850,7 +880,8 @@ class LCCTable(HasTraits):
         #
         if save_max_min_nm_to_file != None:
 
-            # get maximum values for superposition if n_Ed is a positive number or minimum if it is a negative number
+            # get maximum values for superposition if n_Ed is a positive number
+            # or minimum if it is a negative number
 
             # (positive) tensile force
             #
@@ -870,7 +901,8 @@ class LCCTable(HasTraits):
 
             # stack as three column array
             #
-            max_min_nm_arr = np.hstack([max_n_arr[:, None], min_n_arr[:, None], max_m_arr[:, None], min_m_arr[:, None]])
+            max_min_nm_arr = np.hstack(
+                [max_n_arr[:, None], min_n_arr[:, None], max_m_arr[:, None], min_m_arr[:, None]])
 
             # save max and min values to file
             #
@@ -885,8 +917,8 @@ class LCCTable(HasTraits):
 
         p.plot(m_Ed_arr, n_Ed_arr, 'wo', markersize=3)  # blue dots
         x = np.array([0, m_Rd])
-        y1 = np.array([ n_Rdc, 0. ])
-        y2 = np.array([ n_Rdt, 0. ])
+        y1 = np.array([n_Rdc, 0.])
+        y2 = np.array([n_Rdt, 0.])
 
 #        p.title('$nm$-Interaktionsdiagramm')
 
@@ -894,12 +926,12 @@ class LCCTable(HasTraits):
 #        if show_tension_only == False:
 #            ax.set_xticks([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2])
 #            ax.set_yticks([200., 0., -200, -400, -600, -800])
-#            p.axis([0., 1.05 * m_Rd, 1.2 * n_Rdt, 1.03 * n_Rdc])  # set plotting range for axis
+# p.axis([0., 1.05 * m_Rd, 1.2 * n_Rdt, 1.03 * n_Rdc])  # set plotting range for axis
 #
 #        if show_tension_only == True:
 #            ax.set_xticks([0., 0.2, 0.4, 0.6, 0.8, 1., 1.2])
 #            ax.set_yticks([140., 120, 100, 80., 60., 40., 20., 0.])
-#            p.axis([0., 1.2, 140., 0.])  # set plotting range for axis
+# p.axis([0., 1.2, 140., 0.])  # set plotting range for axis
 
         p.plot(x, y1, 'k--', linewidth=2.0)  # black dashed line
         p.plot(x, y2, 'k--', linewidth=2.0)  # black dashed line
@@ -911,7 +943,8 @@ class LCCTable(HasTraits):
 #        ax.spines['top'].set_color('none')
 #        ax.xaxis.set_ticks_position('bottom')
 #        ax.yaxis.set_ticks_position('left')
-        p.xlabel('$m_{Ed}$ [kNm/m]', fontsize=14, verticalalignment='top', horizontalalignment='right')
+        p.xlabel('$m_{Ed}$ [kNm/m]', fontsize=14,
+                 verticalalignment='top', horizontalalignment='right')
         p.ylabel('$n_{Ed}$ [kN/m]', fontsize=14)
 
         # save figure as png-file
@@ -921,7 +954,6 @@ class LCCTable(HasTraits):
             p.savefig(save_fig_to_file, format='png')
 
         p.show()
-
 
     def plot_eta_nm_interaction(self, save_fig_to_file=None, show_tension_only=False, save_max_min_eta_nm_to_file=None, add_max_min_eta_nm_from_file=None):
         '''plot the eta_nm-interaction for all loading case combinations
@@ -1033,8 +1065,10 @@ class LCCTable(HasTraits):
             eta_m2_lo_list.append(abs(eta_m2_lo))
             eta_m2_up_list.append(abs(eta_m2_up))
 
-            eta_n_list = eta_n_lo_list + eta_n_up_list + eta_n2_lo_list + eta_n2_up_list
-            eta_m_list = eta_m_lo_list + eta_m_up_list + eta_m2_lo_list + eta_m2_up_list
+            eta_n_list = eta_n_lo_list + eta_n_up_list + \
+                eta_n2_lo_list + eta_n2_up_list
+            eta_m_list = eta_m_lo_list + eta_m_up_list + \
+                eta_m2_lo_list + eta_m2_up_list
 
         # stack the list to an array in order to use plot-function
         #
@@ -1048,7 +1082,8 @@ class LCCTable(HasTraits):
 
             # get maximum values if eta_n is a positive number or minimum if it is a negative number
             #
-            max_eta_n_arr = np.max(eta_n_arr, axis=1)  # eta caused by (positive) tensile force
+            # eta caused by (positive) tensile force
+            max_eta_n_arr = np.max(eta_n_arr, axis=1)
 
             # eta caused by (negative) compression force
             #
@@ -1064,12 +1099,12 @@ class LCCTable(HasTraits):
 
             # stack as four column array
             #
-            max_min_eta_nm_arr = np.hstack([max_eta_n_arr[:, None], min_eta_n_arr[:, None], max_eta_m_arr[:, None], min_eta_m_arr[:, None]])
+            max_min_eta_nm_arr = np.hstack([max_eta_n_arr[:, None], min_eta_n_arr[
+                                           :, None], max_eta_m_arr[:, None], min_eta_m_arr[:, None]])
             # save max values to file
             #
             np.savetxt(save_max_min_eta_nm_to_file, max_min_eta_nm_arr)
             print 'max_min_eta_nm_arr saved to file %s' % (save_max_min_eta_nm_to_file)
-
 
         #----------------------------------------------
         # plot
@@ -1078,9 +1113,9 @@ class LCCTable(HasTraits):
         p.figure(facecolor='white')  # white background
 
         p.plot(eta_m_arr, eta_n_arr, 'wo', markersize=3)  # blue dots
-        x = np.array([0, 1. ])
-        y1 = np.array([ -1., 0. ])
-        y2 = np.array([  1., 0. ])
+        x = np.array([0, 1.])
+        y1 = np.array([-1., 0.])
+        y2 = np.array([1., 0.])
 
 #        p.title('Ausnutzungsgrad $\eta_{nm}$')
 
@@ -1093,7 +1128,8 @@ class LCCTable(HasTraits):
 
         if show_tension_only == False:
             ax.set_xticks([0., 0.2, 0.4, 0.6, 0.8, 1.])
-            ax.set_yticks([1., 0.8, 0.6, 0.4, 0.2, 0, -0.2, -0.4, -0.6, -0.8, -1.])
+            ax.set_yticks(
+                [1., 0.8, 0.6, 0.4, 0.2, 0, -0.2, -0.4, -0.6, -0.8, -1.])
             p.axis([0., 1., 1., -1.])  # set plotting range for axis
 
         p.plot(x, y1, 'k--', linewidth=2.0)  # black dashed line
@@ -1117,24 +1153,23 @@ class LCCTable(HasTraits):
 
         p.show()
 
-
     # ------------------------------------------------------------
     # View
     # ------------------------------------------------------------
 
     traits_view = View(VGroup(
 
-                        Item('geo_data_file',
-                              label='Evaluated input file for thicknesses ',
-                               style='readonly', emphasized=True),
-                        VSplit(
-                                    Item('lcc_list', editor=lcc_list_editor,
-                                          show_label=False),
-                                    Item('lcc@', show_label=False),
-                                    ),
-                        ),
-                      resizable=True,
-                      scrollable=True,
-                      height=1.0,
-                      width=1.0
-                      )
+        Item('geo_data_file',
+             label='Evaluated input file for thicknesses ',
+             style='readonly', emphasized=True),
+        VSplit(
+            Item('lcc_list', editor=lcc_list_editor,
+                 show_label=False),
+            Item('lcc@', show_label=False),
+        ),
+    ),
+        resizable=True,
+        scrollable=True,
+        height=1.0,
+        width=1.0
+    )

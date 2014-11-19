@@ -66,10 +66,11 @@ class LCReaderInfoCAD(LCReader):
         #
         node_U = input_arr[:, [ux_idx, uy_idx, uz_idx]]
 
-        #-----------
+        # -----------
         # get the element displacement at the center of gravity
-        # the calculation based on the nodal displacement needs the information stored in 'geo_data'
-        #-----------
+        # the calculation based on the nodal displacement needs the information
+        # stored in 'geo_data'
+        # -----------
 
         # the path to the 'geo_data' files is specified specifically in the
         # definition of 'read_geo_data'
@@ -224,14 +225,13 @@ class LCReaderInfoCAD(LCReader):
         quads = geo['q_elem_node_map']
         # scalars = random.random(points.shape)
 
-        # The TVTK dataset.
+        # The TVTK data set.
         qmesh = tvtk.PolyData(points=points, polys=quads)  # @UndefinedVariable
         mlab.pipeline.surface(qmesh, representation='wireframe')
 
-        # The TVTK dataset.
         tmesh = tvtk.PolyData(points=points,  # @UndefinedVariable
                               polys=triangles)
-        mlab.pipeline.surface(tmesh, representation='wireframe')
+        return mlab.pipeline.surface(tmesh, representation='wireframe')
 
     def plot_deformed_mesh(self, mlab, geo_data,
                            state_data={'node_U': np.array([0., 0., 0.])},
@@ -257,7 +257,7 @@ class LCReaderInfoCAD(LCReader):
                               polys=triangles)
         mlab.pipeline.surface(tmesh, representation='wireframe')
 
-    def plot_sd(self, mlab, geo_data, sd_key,
+    def plot_sd(self, mlab, geo_data=None, sd_key=None,
                 state_data={'node_U': np.array([0., 0., 0.])},
                 warp_factor=1.0):
         '''plot the chosen state data defined by 'sd_key' at the center
@@ -265,6 +265,7 @@ class LCReaderInfoCAD(LCReader):
         together with the element mesh; 'warp_factor' can be used to warp
         the deformation state in the plot.
         '''
+
         gd = geo_data
         sd = state_data
 
@@ -319,8 +320,8 @@ class LCReaderInfoCAD(LCReader):
 
         # plot state data in the deformed geometry
         #
-        mlab.points3d(X_def, Y_def, Z_def, sd[sd_key],
-                      mode="cube")
+        return mlab.points3d(X_def, Y_def, Z_def, sd[sd_key],
+                             mode="cube")
 
     def plot_col(self, mlab, plot_col, geo_data,
                  state_data={'ux_elem': np.array([[0.], [0.], [0.]]),
@@ -362,10 +363,10 @@ class LCReaderInfoCAD(LCReader):
 
         # plot state data in the deformed geometry
         #
-        mlab.points3d(X_def, Y_def, Z_def, plot_col,
-                      mode="cube",
-                      scale_mode='none',
-                      scale_factor=0.05)
+        return mlab.points3d(X_def, Y_def, Z_def, plot_col,
+                             mode="cube",
+                             scale_mode='none',
+                             scale_factor=0.05)
 
     def check_for_consistency(self, lc_list, geo_data_dict):
         print '*** check for consistency ***'
